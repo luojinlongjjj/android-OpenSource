@@ -1,0 +1,75 @@
+/**
+ * Copyright (c) 2016-present, RxJava Contributors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+ * the License for the specific language governing permissions and limitations under the License.
+ */
+
+package yourpck.reactivex.internal.operators.single;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import yourpck.reactivex.Scheduler;
+import yourpck.reactivex.Single;
+import yourpck.reactivex.SingleObserver;
+import yourpck.reactivex.disposables.Disposable;
+import yourpck.reactivex.internal.disposables.DisposableHelper;
+
+/**
+ * Signals a {@code 0L} after the specified delay.
+ */
+public final class SingleTimer extends Single<Long> {
+
+    final long delay;
+    final TimeUnit unit;
+    final Scheduler scheduler;
+
+    public SingleTimer(long delay, TimeUnit unit, Scheduler scheduler) {
+        this.delay = delay;
+        this.unit = unit;
+        this.scheduler = scheduler;
+    }
+
+    @Override
+    protected void subscribeActual(final SingleObserver<? super Long> observer) {
+        TimerDisposable parent = new TimerDisposable(observer);
+        observer.onSubscribe(parent);
+        parent.setFuture(scheduler.scheduleDirect(parent, delay, unit));
+    }
+
+    static final class TimerDisposable extends AtomicReference<Disposable> implements Disposable, Runnable {
+
+        private static final long serialVersionUID = 8465401857522493082L;
+        final SingleObserver<? super Long> downstream;
+
+        TimerDisposable(final SingleObserver<? super Long> downstream) {
+            this.downstream = downstream;
+        }
+
+        @Override
+        public void run() {
+            downstream.onSuccess(0L);
+        }
+
+        @Override
+        public void dispose() {
+            DisposableHelper.dispose(this);
+        }
+
+        @Override
+        public boolean isDisposed() {
+            return DisposableHelper.isDisposed(get());
+        }
+
+        void setFuture(Disposable d) {
+            DisposableHelper.replace(this, d);
+        }
+    }
+}

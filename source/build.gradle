@@ -1,0 +1,70 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+android {
+    compileSdkVersion 29
+
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        tasks.lint.enabled = false
+        abortOnError false
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:+'
+    implementation 'com.android.support:support-v13:+'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    //annotationProcessor 'com.github.hotchemi:permissionsdispatcher-processor:3.1.0'
+    //implementation 'com.github.hotchemi:permissionsdispatcher-processor:3.1.0'
+    //implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    //implementation 'com.squareup.moshi:moshi:1.8.0'
+    //implementation 'com.squareup.okio:1.17.4'
+    //implementation 'org.codehaus.mojo:animal-sniffer-annotations:1.17'
+    implementation 'org.conscrypt:conscrypt-openjdk-uber:2.1.0'
+
+    //    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.0"
+    //implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.20'
+    //implementation 'org.codehaus.mojo:animal-sniffer-annotations:1.17'
+
+}
+
+
+task makeJar(type: Copy) {
+    delete 'build/libs/source.jar'
+    from('build/intermediates/intermediate-jars/release/')
+    //from('build/intermediates/intermediate-jars/debug/')
+    into('build/libs/')
+    include('classes.jar')
+    rename('classes.jar', 'source.jar')
+
+
+}
+
+makeJar.dependsOn(build)
+//在终端执行生成JAR包
+// gradlew makeJar
